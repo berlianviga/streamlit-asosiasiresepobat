@@ -80,6 +80,37 @@ df = df.dropna(subset=["Tanggal"])
 df["Hari"] = df["Tanggal"].dt.day_name()
 
 # ============================================
+# PENANGANAN OUTLIER (JUMLAH OBAT PER RESEP)
+# ============================================
+
+# Hitung jumlah obat per transaksi
+jumlah_obat = df.groupby(["Tanggal", "Waktu", "Id Resep"])["Nama Obat"].count()
+
+# Hitung IQR
+Q1 = jumlah_obat.quantile(0.25)
+Q3 = jumlah_obat.quantile(0.75)
+IQR = Q3 - Q1
+
+# Tentukan batas outlier
+batas_bawah = Q1 - 1.5 * IQR
+batas_atas = Q3 + 1.5 * IQR
+
+# Identifikasi transaksi normal
+transaksi_normal = jumlah_obat[
+    (jumlah_obat >= batas_bawah) & (jumlah_obat <= batas_atas)
+]
+
+# Ambil index transaksi normal
+index_normal = transaksi_normal.index
+
+# Filter dataframe utama (silent)
+df = (
+    df.set_index(["Tanggal", "Waktu", "Id Resep"])
+      .loc[index_normal]
+      .reset_index()
+)
+
+# ============================================
 # SIDEBAR MENU
 # ============================================
 st.sidebar.title("📌 Menu")
