@@ -61,8 +61,7 @@ except:
     pass
 
 # Kategori waktu
-def kategori_waktu(waktu):
-    jam = waktu.hour
+def kategori_waktu(jam):
     if 0 <= jam < 12:
         return "Pagi"
     elif 12 <= jam < 17:
