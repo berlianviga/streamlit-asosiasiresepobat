@@ -10,18 +10,52 @@ st.set_page_config(
 )
 
 # ============================================
+# MENU SIDEBAR (DULUAN)
+# ============================================
+#st.sidebar.title("📌 Menu")
+#menu = st.sidebar.radio(
+ #   "Pilih halaman:",
+  #  ["Dashboard", "Distribusi Obat", "Analisis Kombinasi Obat"]
+#)
+
+# ============================================
 # UPLOAD FILE
 # ============================================
-uploaded_file = st.file_uploader("📤 Unggah file CSV data resep obat", type=["csv"])
+# uploaded_file = st.file_uploader("📤 Unggah file CSV data resep obat", type=["csv"])
 
-if uploaded_file is None:
-    st.title("📊 Dashboard Analisis Resep Obat")
-    st.info("Silakan unggah file CSV untuk memulai analisis.")
-    st.stop()
+# if uploaded_file is None:
+#    st.title("📊 Dashboard Analisis Resep Obat")
+ #   st.info("Silakan unggah file CSV untuk memulai analisis.")
+ #   st.stop()
+ 
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None
+
+uploaded_placeholder = st.empty()
+
+if st.session_state.uploaded_file is None:
+    with uploaded_placeholder:
+        uploaded_file = st.file_uploader(
+            "📤 Unggah file CSV data resep obat", type=["csv"]
+        )
+    if uploaded_file is not None:
+        st.session_state.uploaded_file = uploaded_file
+        uploaded_placeholder.empty()
+        st.rerun()
+    else:
+        st.title("Sistem Rekomendasi Resep Obat")
+        st.info("Silakan unggah file CSV untuk memulai analisis.")
+        st.stop()
+
+# pakai file dari session
+# df = pd.read_csv(st.session_state.uploaded_file)
+
 
 # ============================================
 # LOAD DATA
 # ============================================
+uploaded_file = st.session_state.uploaded_file
+uploaded_file.seek(0)
 df = pd.read_csv(uploaded_file)
 
 # ============================================
@@ -159,9 +193,9 @@ elif menu == "Distribusi Obat":
 # ANALISIS KOMBINASI OBAT
 # ============================================
 elif menu == "Analisis Kombinasi Obat":
-    st.title("🧠 Analisis Pola Kombinasi Obat – FP-Growth")
+    st.title("🧠 Analisis Pola Kombinasi Obat")
 
-    st.sidebar.header("⚙️ Parameter FP-Growth")
+    st.sidebar.header("⚙️ Parameter ")
     min_support = st.sidebar.slider("Support minimum (%)", 1, 20, 5) / 100
     min_confidence = st.sidebar.slider("Confidence minimum (%)", 10, 100, 50) / 100
     top_n = st.sidebar.slider("Jumlah aturan ditampilkan", 5, 30, 10)
@@ -195,9 +229,10 @@ elif menu == "Analisis Kombinasi Obat":
     # =================================================
     # REKOMENDASI STOK OBAT
     # =================================================
+    
     st.subheader("📦 Rekomendasi Stok Obat")
 
-    stok_freq = pd.Series(dtype=int)
+    stok_freq = {}
 
     for _, row in rules_sorted.iterrows():
         for ob in row["antecedents"].split(", "):
@@ -205,12 +240,20 @@ elif menu == "Analisis Kombinasi Obat":
         for ob in row["consequents"].split(", "):
             stok_freq[ob] = stok_freq.get(ob, 0) + 1
 
-    stok_rekom = stok_freq.sort_values(ascending=False)
-    stok_df = pd.DataFrame({
-        "Nama Obat": stok_rekom.index,
-        "Frekuensi Muncul di Aturan": stok_rekom.values,
-        "Rekomendasi Stok": stok_rekom.apply(lambda x: "⚠️ Tinggi" if x >= stok_rekom.max() * 0.7 else "Normal")
-    })
+    stok_df = (
+    pd.DataFrame(
+        list(stok_freq.items()),
+        columns=["Nama Obat", "Frekuensi Muncul di Aturan"]
+    )
+    .sort_values("Frekuensi Muncul di Aturan", ascending=False)
+    .reset_index(drop=True)
+    )
+    
+    threshold = stok_df["Frekuensi Muncul di Aturan"].max() * 0.7
+    
+    stok_df["Rekomendasi Stok"] = stok_df["Frekuensi Muncul di Aturan"].apply(
+    lambda x: "⚠️ Tinggi" if x >= threshold else "Normal"
+    )
 
     st.dataframe(stok_df, use_container_width=True)
 
