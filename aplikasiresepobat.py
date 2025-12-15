@@ -10,24 +10,9 @@ st.set_page_config(
 )
 
 # ============================================
-# MENU SIDEBAR (DULUAN)
-# ============================================
-#st.sidebar.title("📌 Menu")
-#menu = st.sidebar.radio(
- #   "Pilih halaman:",
-  #  ["Dashboard", "Distribusi Obat", "Analisis Kombinasi Obat"]
-#)
-
-# ============================================
 # UPLOAD FILE
 # ============================================
-# uploaded_file = st.file_uploader("📤 Unggah file CSV data resep obat", type=["csv"])
 
-# if uploaded_file is None:
-#    st.title("📊 Dashboard Analisis Resep Obat")
- #   st.info("Silakan unggah file CSV untuk memulai analisis.")
- #   st.stop()
- 
 if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 
@@ -47,8 +32,6 @@ if st.session_state.uploaded_file is None:
         st.info("Silakan unggah file CSV untuk memulai analisis.")
         st.stop()
 
-# pakai file dari session
-# df = pd.read_csv(st.session_state.uploaded_file)
 
 
 # ============================================
