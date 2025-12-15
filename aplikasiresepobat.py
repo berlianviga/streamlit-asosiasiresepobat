@@ -61,12 +61,13 @@ except:
     pass
 
 # Kategori waktu
-def kategori_waktu(jam):
-    if 5 <= jam <= 10:
+def kategori_waktu(waktu):
+    jam = waktu.hour
+    if 0 <= jam < 12:
         return "Pagi"
-    elif 11 <= jam <= 14:
+    elif 12 <= jam < 17:
         return "Siang"
-    elif 15 <= jam <= 17:
+    elif 17 <= jam < 21:
         return "Sore"
     else:
         return "Malam"
@@ -153,10 +154,10 @@ if menu == "Dashboard":
         st.subheader("⏰ Grafik Transaksi Berdasarkan Waktu (Pagi–Malam)")
         st.info("""
         **Pembagian Waktu Transaksi Obat:**
-        - **Pagi:** 05:00 – 10:59  
-        - **Siang:** 11:00 – 14:59  
-        - **Sore:** 15:00 – 17:59  
-        - **Malam:** 18:00 – 04:59  
+        - **Pagi:** 00:00 – 11:59  
+        - **Siang:** 12:00 – 16:59  
+        - **Sore:** 17:00 – 21:00  
+        - **Malam:** 21:00 – 23:59  
         """)
         waktu_kat_count = df["Kategori Waktu"].value_counts()
         kategori_lengkap = ["Pagi", "Siang", "Sore", "Malam"]
