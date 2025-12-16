@@ -50,6 +50,15 @@ df = df.dropna(subset=['Aturan Pakai']).drop_duplicates()
 for col in ['Nama Obat', 'Aturan Pakai', 'Nama Pasien', 'Nama Dokter', 'Ruangan', 'Status']:
     if col in df.columns:
         df[col] = df[col].astype(str).str.lower().str.strip()
+        
+    if "Nama Dokter" in df.columns:
+     df["Nama Dokter"] = (
+        df["Nama Dokter"]
+        .astype(str)
+        .str.strip()
+        .str.replace(r"\s+", " ", regex=True)  # hapus spasi ganda
+        .str.title()                            # samakan kapital
+     )
 
 # Membuat ID Resep unik
 df["Id Resep"] = df["Tanggal"].astype(str).str.strip() + " " + df["Waktu"].astype(str).str.strip()
@@ -187,9 +196,23 @@ elif menu == "Distribusi Obat":
     df_filtered = df[df["Tanggal"].astype(str).isin(date_filter)] if date_filter else df
 
     if "Nama Dokter" in df.columns:
-        dokter_filter = col2.selectbox("👨‍⚕️ Filter dokter", ["Semua"] + df["Nama Dokter"].unique().tolist())
-        if dokter_filter != "Semua":
-            df_filtered = df_filtered[df_filtered["Nama Dokter"] == dokter_filter]
+        dokter_list = (
+            df["Nama Dokter"]
+            .dropna()
+            .unique()
+            .tolist()
+        )
+        
+    dokter_list = sorted(dokter_list)
+
+    dokter_filter = col2.selectbox(
+        "👨‍⚕️ Filter dokter",
+        ["Semua"] + dokter_list
+    )
+
+    if dokter_filter != "Semua":
+        df_filtered = df_filtered[df_filtered["Nama Dokter"] == dokter_filter]
+
 
     st.success(f"Jumlah data setelah filter: {len(df_filtered)}")
 
